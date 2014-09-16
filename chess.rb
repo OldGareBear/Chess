@@ -1,5 +1,7 @@
 require_relative 'pieces'
 
+# □
+
 class Board
 
   attr_accessor :grid
@@ -62,7 +64,24 @@ class Board
     position.all? { |coord| coord.between?(0, 7) }
   end
 
+  def render
+
+    (0...8).each do |y|
+      # print "#{y}  "
+
+      (0...8).each do |x|
+
+        current_square = self[[x, y]]
+        print current_square ? current_square.to_s : "-"
+        print "  "
+
+      end
+      print "\n"
+    end
+  end
+
 end
+
 
 class Game
 end

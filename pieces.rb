@@ -65,6 +65,10 @@ end
 
 class Queen < SlidingPiece
 
+  def to_s
+    self.color == :white ? "♕" : "♛"
+  end
+
   def move_dirs
     [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT]
   end
@@ -72,12 +76,20 @@ end
 
 class Rook < SlidingPiece
 
+  def to_s
+    self.color == :white ? "♖" : "♜"
+  end
+
   def move_dirs
     [UP, DOWN, LEFT, RIGHT]
   end
 end
 
 class Bishop < SlidingPiece
+
+  def to_s
+    self.color == :white ? "♗" : "♝"
+  end
 
   def move_dirs
     [UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT]
@@ -108,12 +120,20 @@ end
 
 class King < SteppingPiece
 
+  def to_s
+    self.color == :white ? "♔" : "♚"
+  end
+
   def possible_moves
     [UP, DOWN, LEFT, RIGHT, UP_LEFT, UP_RIGHT, DOWN_LEFT, DOWN_RIGHT]
   end
 end
 
 class Knight < SteppingPiece
+
+  def to_s
+    self.color == :white ? "♘" : "♞"
+  end
 
   def possible_moves
     [[-2, -1],[-2,  1],[-1, -2],[-1,  2],
@@ -122,6 +142,10 @@ class Knight < SteppingPiece
 end
 
 class Pawn < Piece
+
+  def to_s
+    self.color == :white ? "♙" : "♟"
+  end
 
   def possible_moves
     if self.color == :black
