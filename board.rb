@@ -40,25 +40,25 @@ class Board
   end
 
   def make_move!(source, target)
-
-    if self[source].nil?
-      raise "You can't move an empty square, ya dingus."
-    elsif self[source].moves_without_check.include?(target)
-      self[target], self[source] = self[source], nil
-      self[target].location = target
-    else
-      raise "Invalid Move" # use a ruby error?
-    end
+    #
+    # if self[source].nil?
+    #   raise "You can't move an empty square, ya dingus."
+    # elsif self[source].moves_without_check.include?(target)
+    self[target], self[source] = self[source], nil
+    self[target].location = target
+    # else
+    #   raise "Invalid Move" # use a ruby error?
+    # end
 
   end
 
   def in_check?(color)
-    enemy_positions = enemy_positions(color)
+    enemies = enemies(color)
     king_loc = find_king(color)
     enemy_moves = []
 
-    enemy_positions.each do |enemy|
-      enemy_moves += self[enemy].moves_without_check
+    enemies.each do |enemy|
+      enemy_moves += enemy.moves_without_check
     end
 
     enemy_moves.include?(king_loc)
@@ -67,8 +67,8 @@ class Board
   def checkmate?(color)
     return false unless self.in_check?(color)
 
-    own_positions = own_positions(color)
-    own_positions.all? { |pos| self[pos].moves.empty? }
+    own_pieces = own_pieces(color)
+    own_pieces.all? { |piece| piece.moves.empty? }
   end
 
   def render
@@ -110,12 +110,8 @@ class Board
   def map_board
     mapping = Hash.new
 
-    each_square do |square|
-      piece = self[square]
-
-      next if piece.nil?
-
-      mapping[square] = [piece.class, piece.color]
+    get_all_pieces.each do |piece|
+      mapping[piece.location] = [piece.class, piece.color]
     end
 
     mapping
@@ -154,47 +150,28 @@ class Board
   end
 
   def instantiate_back_row(position, color)
-    case position[0]
-    when 0, 7
-      self[position] = Rook.new(color, position, self)
-    when 1, 6
-      self[position] = Knight.new(color, position, self)
-    when 2, 5
-      self[position] = Bishop.new(color, position, self)
-    when 3
-      self[position] = Queen.new(color, position, self)
-    when 4
-      self[position] = King.new(color, position, self)
+    pieces = [Rook, Knight, Bishop, King, Queen, Bishop, Knight, Rook]
+
+    pieces.each_with_index do |piece, index|
+      self[position] = piece.new(color, position, self) if index == position[0]
     end
+  end
+
+  def get_all_pieces
+    grid.flatten.compact
   end
 
   def find_king(color)
-    loc = nil
-    each_square do |square|
-      loc = square if self[square].class == King && self[square].color == color
-    end
-
-    loc
+    own_pieces(color).each { |piece| return piece.location if piece.class == King }
   end
 
-  def own_positions(color)
-    positions = []
-
-    each_square do |square|
-      positions << square if !self[square].nil? && self[square].color == color
-    end
-
-    positions
+  def own_pieces(color)
+    get_all_pieces.select { |piece| piece.color == color }
   end
 
-  def enemy_positions(color)
-    positions = []
-
-    each_square do |square|
-      positions << square if !self[square].nil? && self[square].color != color
-    end
-
-    positions
+  def enemies(color)
+    get_all_pieces.select { |piece| piece.color != color }
   end
+
 
 end
