@@ -34,7 +34,7 @@ class Piece
   def move_into_check?(position)
     source, target = self.location, position
     duped = self.board.deep_dup
-    duped.make_move(source, target)
+    duped.make_move!(source, target)
     duped.in_check?(self.color)
   end
 end
@@ -42,12 +42,7 @@ end
 class SlidingPiece < Piece
 
   def moves
-    moves = []
-    self.move_dirs.each do |dir|
-      moves += one_direction(dir)
-    end
-
-    moves.reject { |move| self.move_into_check?(move) }
+    self.moves_without_check.reject { |move| self.move_into_check?(move) }
   end
 
   def moves_without_check
@@ -60,11 +55,7 @@ class SlidingPiece < Piece
   end
 
   def move_is_valid?(position)
-    return true if self.board.on_board?(position) && self.board[position].nil?
-    # checks whether a position:
-    # is occupied/unoccupied
-    # is on the board
-    false
+    self.board.on_board?(position) && self.board[position].nil?
   end
 
   def one_direction(direction)
@@ -119,13 +110,7 @@ end
 class SteppingPiece < Piece
 
   def moves
-    all_moves = []
-    possible_moves.each do |possible_move|
-      new_position = self.new_position(self.location, possible_move)
-      all_moves << new_position if move_is_valid?(new_position)
-    end
-
-    all_moves.reject { |move| self.move_into_check?(move) }
+    self.moves_without_check.reject { |move| self.move_into_check?(move) }
   end
 
   def moves_without_check
@@ -139,11 +124,8 @@ class SteppingPiece < Piece
   end
 
   def move_is_valid?(position)
-
-    return true if self.board.on_board?(position) &&
+    self.board.on_board?(position) &&
       (self.board[position].nil? || self.board[position].color != self.color)
-
-    false
   end
 
 end
@@ -193,25 +175,7 @@ class Pawn < Piece
   end
 
   def moves
-    all_moves = []
-
-    diagonal_moves = self.possible_moves.select { |move| move[0] != 0 }
-    straight_moves = self.possible_moves.select { |move| move[0] == 0 }
-
-    diagonal_moves.each do |diagonal_move|
-      new_pos = self.new_position(self.location, diagonal_move)
-      next if self.board[new_pos].nil? || self.board[new_pos].color == self.color
-
-      all_moves << new_pos
-    end
-
-    straight_moves.each do |straight_move|
-      new_pos = self.new_position(self.location, straight_move)
-      break unless self.board[new_pos].nil?
-      all_moves << new_pos
-    end
-
-    all_moves.reject { |move| self.move_into_check?(move) }
+    self.moves_without_check.reject { |move| self.move_into_check?(move) }
   end
 
   def moves_without_check
