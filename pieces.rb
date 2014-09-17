@@ -50,6 +50,15 @@ class SlidingPiece < Piece
     moves.reject { |move| self.move_into_check?(move) }
   end
 
+  def moves_without_check
+    moves = []
+    self.move_dirs.each do |dir|
+      moves += one_direction(dir)
+    end
+
+    moves
+  end
+
   def move_is_valid?(position)
     return true if self.board.on_board?(position) && self.board[position].nil?
     # checks whether a position:
@@ -117,6 +126,16 @@ class SteppingPiece < Piece
     end
 
     all_moves.reject { |move| self.move_into_check?(move) }
+  end
+
+  def moves_without_check
+    all_moves = []
+    possible_moves.each do |possible_move|
+      new_position = self.new_position(self.location, possible_move)
+      all_moves << new_position if move_is_valid?(new_position)
+    end
+
+    all_moves
   end
 
   def move_is_valid?(position)
@@ -193,6 +212,28 @@ class Pawn < Piece
     end
 
     all_moves.reject { |move| self.move_into_check?(move) }
+  end
+
+  def moves_without_check
+    all_moves = []
+
+    diagonal_moves = self.possible_moves.select { |move| move[0] != 0 }
+    straight_moves = self.possible_moves.select { |move| move[0] == 0 }
+
+    diagonal_moves.each do |diagonal_move|
+      new_pos = self.new_position(self.location, diagonal_move)
+      next if self.board[new_pos].nil? || self.board[new_pos].color == self.color
+
+      all_moves << new_pos
+    end
+
+    straight_moves.each do |straight_move|
+      new_pos = self.new_position(self.location, straight_move)
+      break unless self.board[new_pos].nil?
+      all_moves << new_pos
+    end
+
+    all_moves
   end
 
 end
