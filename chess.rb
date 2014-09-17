@@ -1,6 +1,5 @@
 require_relative 'pieces'
 
-# □
 
 class Board
 
@@ -13,10 +12,10 @@ class Board
 
   def initialize
     @grid = self.class.blank_grid
-    self.initialize_pieces
+    self.instantiate_pieces
   end
 
-  def initialize_pieces # can we make this class method?
+  def instantiate_pieces # can we make this class method?
     self.grid.each_with_index do |row, r_index|
       row.each_with_index do |col, c_index|
         position = [r_index, c_index]
@@ -64,6 +63,17 @@ class Board
     position.all? { |coord| coord.between?(0, 7) }
   end
 
+  def make_move(source, target)
+
+    if self[source].moves.include?(target)
+      self[target], self[source] = self[source], nil
+      self[target].location = target
+    else
+      raise "Invalid Move" # use a ruby error?
+    end
+
+  end
+
   def render
 
     (0...8).each do |y|
@@ -78,6 +88,8 @@ class Board
       end
       print "\n"
     end
+
+    nil
   end
 
 end

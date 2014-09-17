@@ -1,3 +1,5 @@
+# require 'debugger'
+
 class Piece
 
   UP         = [0,  1]
@@ -9,7 +11,8 @@ class Piece
   DOWN_LEFT  = [-1,-1]
   DOWN_RIGHT = [1, -1]
 
-  attr_reader :color, :location, :board
+  attr_reader :color, :board
+  attr_accessor :location
 
   def initialize(color, location, board)
     @color = color
@@ -18,7 +21,7 @@ class Piece
   end
 
   def inspect
-    "I am a #{self.color} #{self.class} at #{self.location}"
+    "#{self.color} #{self.class} at #{self.location}"
   end
 
   def new_position(curr_position, delta)
@@ -34,29 +37,32 @@ class SlidingPiece < Piece
   def moves
     moves = []
     self.move_dirs.each do |dir|
-      moves << one_direction(dir)
+      moves += one_direction(dir)
     end
 
     moves
   end
 
   def move_is_valid?(position)
-    return false unless self.board.on_board?(position) && self.board[position].nil?
+    return true if self.board.on_board?(position) && self.board[position].nil?
     # checks whether a position:
     # is occupied/unoccupied
     # is on the board
-    true
+    false
   end
 
   def one_direction(direction)
+    # debugger
     current_pos = self.location
     all_moves = []
     valid = true
 
     while valid
       current_pos = self.new_position(current_pos, direction)
-      valid = move_is_valid?(new_pos)
-      all_moves << new_pos if valid || self.board[current_position].color != self.color
+      valid = move_is_valid?(current_pos)
+      # p self.board
+      next unless self.board.on_board?(current_pos)
+      all_moves << current_pos if valid || self.board[current_pos].color != self.color
     end
 
     all_moves
@@ -98,7 +104,7 @@ end
 
 class SteppingPiece < Piece
 
-  def move
+  def moves
     all_moves = []
     possible_moves.each do |possible_move|
       new_position = self.new_position(self.location, possible_move)
@@ -109,11 +115,11 @@ class SteppingPiece < Piece
   end
 
   def move_is_valid?(position)
-    return false if self.board.on_board?(position) ||
-      self.board[position].color == self.color
 
-    # returns true if the position is on the board and empty/enemy
-    true
+    return true if self.board.on_board?(position) &&
+      (self.board[position].nil? || self.board[position].color != self.color)
+
+    false
   end
 
 end
@@ -162,7 +168,7 @@ class Pawn < Piece
   def move_is_valid?(position)
   end
 
-  def move
+  def moves
     all_moves = []
 
     diagonal_moves = self.possible_moves.select { |move| move[0] != 0 }
