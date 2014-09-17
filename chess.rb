@@ -67,6 +67,48 @@ class Board
     nil
   end
 
+  def deep_dup
+    duped = Board.new
+    mapped = self.map_board
+
+    duped.each_square do |square|
+      if mapped.has_key?(square)
+        piece_type = mapped[square][0]
+        color = mapped[square][1]
+
+        duped[square] = piece_type.new(color, square, duped)
+      else
+        duped[square] = nil
+      end
+    end
+
+    duped
+  end
+
+  def map_board
+    mapping = Hash.new
+
+    each_square do |square|
+      piece = self[square]
+
+      next if piece.nil?
+
+      mapping[square] = [piece.class, piece.color]
+    end
+
+    mapping
+  end
+
+  protected
+
+  def each_square(&prc)
+    (0..7).each do |row|
+      (0..7).each do |col|
+        prc.call([row, col])
+      end
+    end
+  end
+
   private
 
   attr_reader :grid
@@ -101,14 +143,6 @@ class Board
       self[position] = Queen.new(color, position, self)
     when 4
       self[position] = King.new(color, position, self)
-    end
-  end
-
-  def each_square(&prc)
-    (0..7).each do |row|
-      (0..7).each do |col|
-        prc.call([row, col])
-      end
     end
   end
 

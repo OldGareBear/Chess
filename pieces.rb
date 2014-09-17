@@ -30,6 +30,13 @@ class Piece
     dx, dy = delta
     new_pos = [x + dx, y - dy]
   end
+
+  def move_into_check?(position)
+    source, target = self.location, position
+    duped = self.board.deep_dup
+    duped.make_move(source, target)
+    duped.in_check?(self.color)
+  end
 end
 
 class SlidingPiece < Piece
@@ -40,7 +47,7 @@ class SlidingPiece < Piece
       moves += one_direction(dir)
     end
 
-    moves
+    moves.reject { |move| self.move_into_check?(move) }
   end
 
   def move_is_valid?(position)
@@ -52,7 +59,6 @@ class SlidingPiece < Piece
   end
 
   def one_direction(direction)
-    # debugger
     current_pos = self.location
     all_moves = []
     valid = true
@@ -60,7 +66,6 @@ class SlidingPiece < Piece
     while valid
       current_pos = self.new_position(current_pos, direction)
       valid = move_is_valid?(current_pos)
-      # p self.board
       next unless self.board.on_board?(current_pos)
       all_moves << current_pos if valid || self.board[current_pos].color != self.color
     end
@@ -111,7 +116,7 @@ class SteppingPiece < Piece
       all_moves << new_position if move_is_valid?(new_position)
     end
 
-    all_moves
+    all_moves.reject { |move| self.move_into_check?(move) }
   end
 
   def move_is_valid?(position)
@@ -187,7 +192,7 @@ class Pawn < Piece
       all_moves << new_pos
     end
 
-    all_moves
+    all_moves.reject { |move| self.move_into_check?(move) }
   end
 
 end
