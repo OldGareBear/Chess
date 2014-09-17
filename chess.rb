@@ -1,22 +1,78 @@
+# require 'debugger'
 require_relative 'pieces'
-
 
 class Board
 
-  attr_accessor :grid
-
   def self.blank_grid
     Array.new(8) { Array.new(8) }
-
   end
 
   def initialize
     @grid = self.class.blank_grid
-    self.instantiate_pieces
+    instantiate_pieces
   end
 
+  # # reference for having x, y be more intuititve
+  def [](pos)#x, y
+    x, y = pos
+    grid[y][x]
+  end
+
+  def []=(pos, piece) # assign a piece or nil to a position
+    x, y = pos
+    grid[y][x] = piece
+  end
+
+  def on_board?(position)
+    position.all? { |coord| coord.between?(0, 7) }
+  end
+
+  def make_move(source, target)
+
+    if self[source].nil?
+      raise "You can't move an empty square, ya dingus."
+    elsif self[source].moves.include?(target)
+      self[target], self[source] = self[source], nil
+      self[target].location = target
+    else
+      raise "Invalid Move" # use a ruby error?
+    end
+
+  end
+
+  def in_check?(color)
+    enemy_positions = enemy_positions(color)
+    king_loc = find_king(color)
+    enemy_moves = []
+
+    enemy_positions.each do |enemy|
+      enemy_moves += self[enemy].moves
+    end
+
+    enemy_moves.include?(king_loc)
+  end
+
+  def render
+    (0...8).each do |y|
+      (0...8).each do |x|
+
+        current_square = self[[x, y]]
+        print current_square ? current_square.to_s : "-"
+        print "  "
+
+      end
+      print "\n"
+    end
+
+    nil
+  end
+
+  private
+
+  attr_reader :grid
+
   def instantiate_pieces # can we make this class method?
-    self.grid.each_with_index do |row, r_index|
+    grid.each_with_index do |row, r_index|
       row.each_with_index do |col, c_index|
         position = [r_index, c_index]
         case position[1]
@@ -48,48 +104,31 @@ class Board
     end
   end
 
-  # # reference for having x, y be more intuititve
-  def [](pos)#x, y
-    x, y = pos
-    self.grid[y][x]
-  end
-
-  def []=(pos, piece) # assign a piece or nil to a position
-    x, y = pos
-    @grid[y][x] = piece
-  end
-
-  def on_board?(position)
-    position.all? { |coord| coord.between?(0, 7) }
-  end
-
-  def make_move(source, target)
-
-    if self[source].moves.include?(target)
-      self[target], self[source] = self[source], nil
-      self[target].location = target
-    else
-      raise "Invalid Move" # use a ruby error?
-    end
-
-  end
-
-  def render
-
-    (0...8).each do |y|
-      # print "#{y}  "
-
-      (0...8).each do |x|
-
-        current_square = self[[x, y]]
-        print current_square ? current_square.to_s : "-"
-        print "  "
-
+  def each_square(&prc)
+    (0..7).each do |row|
+      (0..7).each do |col|
+        prc.call([row, col])
       end
-      print "\n"
+    end
+  end
+
+  def find_king(color)
+    loc = nil
+    each_square do |square|
+      loc = square if self[square].class == King && self[square].color == color
     end
 
-    nil
+    loc
+  end
+
+  def enemy_positions(color)
+    positions = []
+
+    each_square do |square|
+      positions << square if !self[square].nil? && self[square].color != color
+    end
+
+    positions
   end
 
 end
