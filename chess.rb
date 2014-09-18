@@ -29,10 +29,6 @@ class Game
         retry
       # ensure
       end
-
-      #process_action(get_chr)
-
-      next_turn
     end
   end
 
@@ -56,8 +52,7 @@ class Game
     when 'd'
       cursor.right
     when ' '
-      # selected_piece = board[board.cursor_square]
-      # raise "Wrong color piece!" if selected_piece.color != color
+      
       grabbed << board.cursor_square
 
       selected_piece = board[grabbed[0]]
@@ -69,12 +64,11 @@ class Game
       end
 
       if grabbed.length == 2
-
         board.make_move(grabbed[0], grabbed[1])
-
         grabbed.clear
+        next_turn
       end
-
+    
     when 'q'
       exit
     end
