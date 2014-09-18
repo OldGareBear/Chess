@@ -1,6 +1,8 @@
 require_relative 'pieces'
+require_relative 'cursor'
 
 class Board
+  attr_reader :cursor
 
   def self.blank_grid
     Array.new(8) { Array.new(8) }
@@ -9,6 +11,7 @@ class Board
   def initialize
     @grid = self.class.blank_grid
     instantiate_pieces
+    @cursor = Cursor.new
   end
 
   # # reference for having x, y be more intuititve
@@ -72,14 +75,20 @@ class Board
   end
 
   def render
+    clear_screen
+
     puts "   0  1  2  3  4  5  6  7"
     (0...8).each do |y|
       print "#{y}  "
-
       (0...8).each do |x|
-
         current_square = self[[x, y]]
-        print current_square ? current_square.to_s : "-"
+
+        if [x, y] == cursor_square
+          print current_square ? gray(current_square.to_s) : gray("-")
+        else
+          print current_square ? current_square.to_s : "-"
+        end
+
         print "  "
 
       end
@@ -88,6 +97,20 @@ class Board
 
     nil
   end
+
+  def cursor_square
+    [cursor.row, cursor.col]
+  end
+
+  def gray(str)
+    str = str.gsub(/\033\[\d+m/, "")
+    "\033[37m#{str}\033[0m"
+  end
+
+  def clear_screen
+    system("clear")
+  end
+
 
   def deep_dup
     duped = Board.new
